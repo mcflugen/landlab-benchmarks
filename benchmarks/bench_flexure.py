@@ -4,15 +4,6 @@ from landlab.components import Flexure
 from landlab import RasterModelGrid
 
 
-def parameterized(names, params):
-    def decorator(func):
-        func.param_names = names
-        func.params = params
-        return func
-
-    return decorator
-
-
 class TimeFlexure:
     """Change number of loads while maintaining grid size."""
 

@@ -9,14 +9,6 @@ from landlab.graph.structured_quad.ext.at_node import fill_links_at_node
 from landlab.graph.structured_quad.ext.at_node import fill_patches_at_node
 from landlab.graph.structured_quad.ext.at_patch import fill_links_at_patch
 from landlab.graph.structured_quad.structured_quad import UniformRectilinearGraph
-from landlab.grid.divergence import calc_flux_div_at_node as calc_flux_div_at_node_slow
-from landlab.grid.gradients import calc_diff_at_link as calc_diff_at_link_slow
-from landlab.grid.gradients import calc_grad_at_link as calc_grad_at_link_slow
-from landlab.grid.raster_divergence import calc_flux_div_at_node
-from landlab.grid.raster_gradients import calc_diff_at_link
-from landlab.grid.raster_gradients import calc_grad_at_link
-
-from landlab import RasterModelGrid
 
 
 def number_of_nodes(shape):
@@ -94,42 +86,3 @@ class TimeRasterFill:
     def time_links_at_patch(self, n):
         out = np.empty((number_of_patches((n, n)), 4), dtype=int)
         fill_links_at_patch((n, n), out)
-
-
-class TimeCalc:
-    params = [[], []]
-    param_names = ["module", "function"]
-
-    func = {
-        "gradients": {
-            "calc_diff_at_link": calc_diff_at_link_slow,
-            "calc_grad_at_link": calc_grad_at_link_slow,
-            "calc_flux_div_at_node": calc_flux_div_at_node_slow,
-        },
-        "raster": {
-            "calc_diff_at_link": calc_diff_at_link,
-            "calc_flux_div_at_node": calc_flux_div_at_node,
-            "calc_grad_at_link": calc_grad_at_link,
-        },
-    }
-
-    def time_calculation(self, mod_name, func_name):
-        self.func[mod_name][func_name](self.grid, self.value_at_node, out=self.out)
-
-
-class TimeCalcAtLink(TimeCalc):
-    params = [["gradients", "raster"], ["calc_diff_at_link", "calc_grad_at_link"]]
-
-    def setup(self, mod_name, func_name):
-        self.grid = RasterModelGrid((400, 5000), (1.0, 2.0))
-        self.value_at_node = np.random.uniform(size=self.grid.number_of_links)
-        self.out = self.grid.empty(at="link")
-
-
-class TimeCalcAtNode(TimeCalc):
-    params = [["gradients", "raster"], ["calc_flux_div_at_node"]]
-
-    def setup(self, mod_name, func_name):
-        self.grid = RasterModelGrid((400, 5000), (1.0, 2.0))
-        self.value_at_node = np.random.uniform(size=self.grid.number_of_links)
-        self.out = self.grid.empty(at="node")
